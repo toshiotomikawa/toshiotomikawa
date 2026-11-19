@@ -65,7 +65,7 @@ Allo throughout, with its `ss02` set. The Firefonts tile cycles "Aa" through sev
 
 ## Layout
 
-Spacing is counted in lines of 24px. Cards sit 6px inside their image, so neighbours are 12px apart both ways; tiles have no bottom margin because the page adds about 6px under each row of images. Tiles are a third of the page wide each, so the grid stays three by three at any width and shrinks with the page on phones.
+Spacing is counted in lines of 24px. Cards sit 6px inside their image, so neighbours are 12px apart both ways; tiles have no bottom margin because the page adds about 6px under each row of images. Tiles are a third of the page wide each, so the grid stays three by three at any width. On a phone the images are drawn at about 0.42 of their size, so each switches to its own phone layout through a media query inside the SVG, which measures the image, not the page: a tile under 200px wide shows only its name, centred at 32px (the line about it stays in the alt text); a hero under 600px wide shrinks the flower and sets the name at 70px and the line at 33px over two lines. Both come out at about 13 to 28px on screen.
 
 ## Elevation & Depth
 
@@ -81,4 +81,4 @@ Each tile is a picture in the top five lines, then the name and one line about t
 
 ## Do's and Don'ts
 
-Do keep each description to one line; the build warns when it is too wide. Don't add colours or a third font size to the tiles.
+Do keep each description to one line; the build warns when it is too wide. Don't add colours, or font sizes beyond the two of each layout (desktop and phone), to the tiles.

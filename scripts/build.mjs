@@ -54,6 +54,8 @@ const doc = (w, h, label, css, body, still = "") =>
 const card = (w, h, t, bottom = 6) => `<rect x="6.5" y="6.5" width="${w - 13}" height="${h - 7 - bottom}" rx="${U / 2}" fill="${t.bg}" stroke="${t.line}"/>`;
 const write = (name, theme, svg) => fs.writeFileSync(path.join(OUT, `${name}-${theme}.svg`), svg);
 const box = "transform-box:fill-box;transform-origin:center;";
+// Below these drawn widths (a phone), each image switches to larger text. Inside an image, a media query measures the image.
+const PHONE = { hero: 600, tile: 200 };
 
 /* ---------------------------------------------------------------- hero */
 // A sunflower: 377 dots on the golden angle, turning slowly while a glow runs outwards.
@@ -72,8 +74,18 @@ function hero(t) {
     `.f circle{opacity:.3;animation:glow 6s ease-in-out infinite}@keyframes glow{50%{opacity:1}}`;
   const name = text(ALLO.black, "toshiotomikawa", cx, 6 + 12 * U, 32, t.fg, { anchor: "middle" });
   const line = text(ALLO.regular, "Firefox add-ons, agent tools and small Windows utilities", cx, 6 + 13.5 * U, 15, t.muted, { anchor: "middle" });
-  return doc(W, H, "toshiotomikawa: Firefox add-ons, agent tools and small Windows utilities. A slowly turning sunflower of dots.", css,
-    card(W, H, t) + `<g class="f" fill="${t.fg}">${dots.join("")}</g>` + name.svg + line.svg, ".f circle{opacity:.6}");
+  // On a phone the hero is drawn at about 0.42 of its size, so a smaller flower makes room for text 2.2 times larger.
+  const big = 2.2, phone = [
+    text(ALLO.black, "toshiotomikawa", cx, 6 + 10.5 * U, 32 * big, t.fg, { anchor: "middle" }),
+    text(ALLO.regular, "Firefox add-ons, agent tools", cx, 6 + 12.5 * U, 15 * big, t.muted, { anchor: "middle" }),
+    text(ALLO.regular, "and small Windows utilities", cx, 6 + 14 * U, 15 * big, t.muted, { anchor: "middle" }),
+  ];
+  for (const p of phone) if (p.width > W - 12 - 2 * U) console.warn(`hero: phone text is ${Math.round(p.width)}px, wider than the card`);
+  const small = `@media (max-width:${PHONE.hero}px){.w{display:none}.n{display:inline}.s{transform:translateY(-${1.5 * U}px) scale(.7)}}`;
+  return doc(W, H, "toshiotomikawa: Firefox add-ons, agent tools and small Windows utilities. A slowly turning sunflower of dots.",
+    css + `.n{display:none}.s{transform-origin:${cx}px ${cy}px}` + small,
+    card(W, H, t) + `<g class="s"><g class="f" fill="${t.fg}">${dots.join("")}</g></g>` +
+    `<g class="w">${name.svg + line.svg}</g><g class="n">${phone.map((p) => p.svg).join("")}</g>`, ".f circle{opacity:.6}");
 }
 
 /* --------------------------------------------------------------- tiles */
@@ -189,7 +201,11 @@ function tile([repo, title, about], t) {
   const name = text(ALLO.bold, title, 6 + U, 6 + 6.5 * U, 16, t.fg);
   const line = text(ALLO.regular, about, 6 + U, 6 + 7.4 * U, 13, t.muted);
   if (line.width > TW - 12 - 2 * U) console.warn(`${repo}: description is ${Math.round(line.width)}px, wider than the tile`);
-  return doc(TW, TH, `${title}: ${about}.`, pic.css, card(TW, TH, t, 0) + pic.svg + name.svg + line.svg, pic.still);
+  // On a phone a tile is drawn at about 0.42 of its size: only the name stays, twice as large and centred; the line about it stays in the alt text.
+  const big = text(ALLO.bold, title, MX, 6 + 7 * U, 32, t.fg, { anchor: "middle" });
+  if (big.width > TW - 12 - U) console.warn(`${repo}: phone name is ${Math.round(big.width)}px, wider than the tile`);
+  const css = pic.css + `.n{display:none}@media (max-width:${PHONE.tile}px){.w{display:none}.n{display:inline}}`;
+  return doc(TW, TH, `${title}: ${about}.`, css, card(TW, TH, t, 0) + pic.svg + `<g class="w">${name.svg + line.svg}</g><g class="n">${big.svg}</g>`, pic.still);
 }
 
 for (const theme of Object.keys(THEMES)) {
